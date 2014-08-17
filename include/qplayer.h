@@ -18,6 +18,7 @@ class QPlayer : public QObject
 
 public:
     explicit QPlayer(QObject *parent = 0);
+    // QPlayer( const QPlayer& player );
 
 private:
     bool calcolaValore1314();
@@ -30,7 +31,7 @@ signals:
 
 public slots:
 
-private:
+public:
     int mCodice;
     Ruolo mRuolo;
     QString mNome;

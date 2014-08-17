@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "qseason.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -20,6 +22,8 @@ protected:
 
 private:
     Ui::MainWindow *ui;
+
+    QSeason mStag14_15;
 };
 
 #endif // MAINWINDOW_H

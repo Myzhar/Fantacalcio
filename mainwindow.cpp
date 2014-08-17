@@ -1,11 +1,27 @@
-e#include "mainwindow.h"
+#include "mainwindow.h"
 #include "ui_mainwindow.h"
+
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Inizializzazione stagione 2014/2015
+    mStag14_15.init2014_2015();
+
+    // >>>>> Inizializzazione Tabs
+    for( int i=0; i<8; i++ )
+    {
+        QString nome, pres;
+        int startBudget, budget;
+
+        mStag14_15.getTeam(i)->getParams( nome, pres, startBudget, budget );
+        ui->tabWidget_teams->setTabText( i, nome );
+    }
+    // <<<<< Inizializzazione Tabs
 }
 
 MainWindow::~MainWindow()

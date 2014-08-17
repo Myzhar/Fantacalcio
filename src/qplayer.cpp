@@ -1,6 +1,7 @@
 #include "include\qplayer.h"
 #include <QFile>
 #include <QStringList>
+#include <QDebug>
 
 #define BUF_SIZE 1024
 
@@ -38,6 +39,40 @@ QPlayer::QPlayer(QObject *parent) :
     mNuovoAcq = false;
     mValIniz14_15 = 0;
 }
+
+//QPlayer::QPlayer( const QPlayer& player )
+//{
+//    mCodice=player.mCodice;
+//    mRuolo=player.mRuolo;
+//    mNome=player.mNome;
+//    mSquadra=player.mSquadra;
+//    mGiornAcq=player.mGiornAcq;
+//    mGiocate=player.mGiocate;
+//    mAmm=player.mAmm;
+//    mEsp=player.mEsp;
+//    mGolFatti=player.mGolFatti;
+//    mGolSubiti=player.mGolSubiti;
+//    mAssTot=player.mAssTot;
+//    mAssMov=player.mAssMov;
+//    mAssFer=player.mAssFer;
+//    mRigPar=player.mRigPar;
+//    mRigSbag=player.mRigSbag;
+//    mRigSegn=player.mRigSegn;
+//    mAutogol=player.mAutogol;
+//    mGolWin=player.mGolWin;
+//    mMediaVec[0]=player.mMediaVec[0];
+//    mMediaVec[1]=player.mMediaVec[1];
+//    mMediaVec[2]=player.mMediaVec[2];
+//    mMediaFCVec[0]=player.mMediaFCVec[0];
+//    mMediaFCVec[1]=player.mMediaFCVec[1];
+//    mMediaFCVec[2]=player.mMediaFCVec[2];
+//    mMedia=player.mMedia;
+//    mMediaFC=player.mMediaFC;
+
+//    mValAcq13_14=player.mValAcq13_14;
+//    mNuovoAcq=player.mNuovoAcq;
+//    mValIniz14_15=player.mValIniz14_15;
+//}
 
 bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore)
 {
@@ -301,4 +336,6 @@ bool QPlayer::calcolaValore1314()
 
     // TODO applicare formula 2013/2014
 
+
+    return true;
 }

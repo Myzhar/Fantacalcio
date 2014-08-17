@@ -2,6 +2,7 @@
 #define QTEAM_H
 
 #include <QObject>
+#include <QList>
 #include "qplayer.h"
 
 class QTeam : public QObject
@@ -10,7 +11,10 @@ class QTeam : public QObject
 
 public:
     explicit QTeam(QObject *parent = 0);
+    //QTeam(const QTeam& team);
 
+    void setParams(QString nome, QString pres, int startBudget );
+    void getParams( QString& nome, QString& pres, int& startBudget, int& currBudget );
     bool aggiungiGioc( int codice, bool nuovoAcq, int valore );
 
 signals:
@@ -21,12 +25,13 @@ private:
     QString mNome;
     QString mPres;
 
-    float mBudget;
+    int mStartBudget;
+    int mBudget;
 
-    QList<QPlayer> mPorList;
-    QList<QPlayer> mDifList;
-    QList<QPlayer> mCenList;
-    QList<QPlayer> mAttList;
+    QList<QPlayer*> mPorList;
+    QList<QPlayer*> mDifList;
+    QList<QPlayer*> mCenList;
+    QList<QPlayer*> mAttList;
 };
 
 #endif // QTEAM_H
