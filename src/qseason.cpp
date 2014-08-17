@@ -5,8 +5,10 @@ QSeason::QSeason(QObject *parent) :
 {
 }
 
-bool QSeason::init2014_2015()
+bool QSeason::init2014_2015( int giornata )
 {
+    mGiornata = giornata;
+
     QTeam* team0 = new QTeam();
     QTeam* team1 = new QTeam();
     QTeam* team2 = new QTeam();
@@ -15,7 +17,6 @@ bool QSeason::init2014_2015()
     QTeam* team5 = new QTeam();
     QTeam* team6 = new QTeam();
     QTeam* team7 = new QTeam();
-    QTeam* team8 = new QTeam();
 
     team0->setParams( "Andrea", "Andrea", 250 );
     team1->setParams( "Angelo", "Angelo", 250 );
@@ -26,6 +27,8 @@ bool QSeason::init2014_2015()
     team6->setParams( "Stefano", "Stefano", 250 );
     team7->setParams( "F.C. Myzhar", "Walter", 250 );
 
+    team7->caricaSquadra( mGiornata );
+
     addTeam( team0 );
     addTeam( team1 );
     addTeam( team2 );
@@ -34,4 +37,6 @@ bool QSeason::init2014_2015()
     addTeam( team5 );
     addTeam( team6 );
     addTeam( team7 );
+
+
 }

@@ -11,7 +11,7 @@ class QSeason : public QObject
 public:
     explicit QSeason(QObject *parent = 0);
 
-    bool init2014_2015();
+    bool init2014_2015(int giornata);
 
     QTeam* getTeam(int idx){return mTeams[idx];}
     void addTeam( QTeam* team ){mTeams << team;}
@@ -22,6 +22,7 @@ public slots:
 private:
     QList<QTeam*> mTeams;
 
+    int mGiornata;
 };
 
 #endif // QSEASON_H

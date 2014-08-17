@@ -10,6 +10,8 @@
 #define VOTI_PATH "C:/Users/Walter/Documents/GitHub/Fantacalcio/Fantacalcio_2014-2015/Voti"
 #define LISTA_INIZ "Quotazioni_Fantagazzetta_(NAPOLI)_alla_0_Giornata.csv"
 
+#define SQ_PATH "C:/Users/Walter/Documents/GitHub/Fantacalcio/Fantacalcio_2014-2015/Squadre"
+
 #define MIL 0
 #define NAP 1
 #define ROM 2

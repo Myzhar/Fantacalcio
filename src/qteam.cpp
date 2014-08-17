@@ -1,4 +1,11 @@
 #include "include\qteam.h"
+#include <QDebug>
+#include <QFile>
+#include <QString>
+#include <QStringList>
+#include <QTableWidget>
+
+#define BUF_SIZE 1024
 
 QTeam::QTeam(QObject *parent) :
     QObject(parent)
@@ -51,3 +58,56 @@ bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore )
 
     return true;
 }
+
+void QTeam::salvaSquadra(int giornata)
+{
+    QFile squadra;
+    QString path = tr("%1/%2_G%3.txt").arg(SQ_PATH).arg(mPres).arg(giornata);
+    squadra.setFileName( path );
+    squadra.open( QIODevice::WriteOnly );
+
+    // TODO Salvare la Squadra
+}
+
+bool QTeam::caricaSquadra(int giornata)
+{
+    QFile squadra;
+    QString path = tr("%1/%2_G%3.txt").arg(SQ_PATH).arg(mPres).arg(giornata);
+    squadra.setFileName( path );
+    if( !squadra.open( QIODevice::ReadOnly ) )
+        return false;
+
+    char buf[BUF_SIZE];
+    while(1)
+    {
+        qint64 lineLength = squadra.readLine(buf, sizeof(buf));
+        if (lineLength == -1)
+        {
+            qDebug() << tr("File %1 terminato").arg(path);
+            squadra.close();
+            break;
+        }
+
+        QString line = buf;
+        QStringList strings = line.split(",");
+
+        if( strings.size()==2 && strings[0].compare( "CREDITI", Qt::CaseInsensitive)==0 )
+        {
+            mBudget = strings[1].toInt();
+            continue;
+        }
+
+        if( strings.size()==4 )
+        {
+            int codice = strings[1].toInt();
+            bool nuovo = strings[2].toInt()==1;
+            int val = strings[3].toInt();
+
+            aggiungiGioc( codice, nuovo, val );
+        }
+    }
+
+    return true;
+}
+
+

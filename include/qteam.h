@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QList>
+#include <QTableWidget>
+
 #include "qplayer.h"
 
 class QTeam : public QObject
@@ -16,6 +18,12 @@ public:
     void setParams(QString nome, QString pres, int startBudget );
     void getParams( QString& nome, QString& pres, int& startBudget, int& currBudget );
     bool aggiungiGioc( int codice, bool nuovoAcq, int valore );
+
+    void salvaSquadra(int giornata);
+    bool caricaSquadra(int giornata);
+    void aggiornaTabella( QTableWidget* tableWidget );
+
+protected:
 
 signals:
 

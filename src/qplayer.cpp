@@ -83,11 +83,17 @@ bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore)
     {
         mValAcq13_14 = 0;
         mValIniz14_15 = valore;
+
+        mValore = mValIniz14_15;
+
         return inizDaFile();
     }
     else
     {
         mValAcq13_14 = valore;
+
+        mValore = mValIniz14_15;
+
         return calcolaValore1314();
     }
 }
@@ -96,13 +102,17 @@ bool QPlayer::inizDaFile()
 {
     // >>>>> parsing Napoli per cercare nome ruolo e squadra
     QFile napoli;
-    QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(LISTA_INIZ); // TODO inserire file mercato iniziale
+    QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(LISTA_INIZ); // TODO inserire file mercato iniziale da Fantagazzetta
     napoli.setFileName( napoliPath );
-    napoli.open( QIODevice::ReadOnly );
+    if( !napoli.open( QIODevice::ReadOnly ) )
+    {
+        qDebug() << tr("File %1 non trovato").arg(napoliPath);
+        return false;
+    }
+
+    char buf[BUF_SIZE];
     while(1)
     {
-        char buf[BUF_SIZE];
-
         qint64 lineLength = napoli.readLine(buf, sizeof(buf));
         if (lineLength == -1)
         {
@@ -121,6 +131,8 @@ bool QPlayer::inizDaFile()
         int cod = strings[0].toInt(&ok);
         if( !ok || cod != mCodice )
             continue;
+
+        qDebug() << tr("Giocatore %1 trovato").arg(mCodice);
 
         if( strings[1].compare("P",Qt::CaseInsensitive)==0 )
             mRuolo = POR;
@@ -155,7 +167,7 @@ bool QPlayer::calcolaValore1314()
         qint64 lineLength = milano.readLine(buf, sizeof(buf));
         if (lineLength == -1)
         {
-            qDebug() << tr("Giocatore %1 non trovato").arg(mCodice);
+            qDebug() << tr("Milano -> Giocatore %1 non trovato").arg(mCodice);
             milano.close();
             return false;
         }
@@ -163,13 +175,15 @@ bool QPlayer::calcolaValore1314()
         QString line = buf;
         QStringList strings = line.split(",");
 
-        if( strings.size() != 22 ) // TODO Verificare!
+        if( strings.size() != 21 )
             continue;
 
         bool ok;
         int cod = strings[0].toInt(&ok);
         if( !ok || cod != mCodice )
             continue;
+
+        qDebug() << tr("Milano -> Giocatore %1 trovato").arg(mCodice);
 
         mMediaVec[MIL] = strings[17].toFloat( &ok );
         if( !ok )
@@ -178,6 +192,8 @@ bool QPlayer::calcolaValore1314()
         mMediaFCVec[MIL] = strings[19].toFloat( &ok );
         if( !ok )
             continue;
+
+        break;
     }
     // <<<<< parsing Milano per cercare medie Milano
 
@@ -193,7 +209,7 @@ bool QPlayer::calcolaValore1314()
         qint64 lineLength = napoli.readLine(buf, sizeof(buf));
         if (lineLength == -1)
         {
-            qDebug() << tr("Giocatore %1 non trovato").arg(mCodice);
+            qDebug() << tr("Napoli -> Giocatore %1 non trovato").arg(mCodice);
             napoli.close();
             return false;
         }
@@ -201,13 +217,14 @@ bool QPlayer::calcolaValore1314()
         QString line = buf;
         QStringList strings = line.split(",");
 
-        if( strings.size() != 22 ) // TODO Verificare!
+        if( strings.size() != 21 )
             continue;
 
         bool ok;
         int cod = strings[0].toInt(&ok);
         if( !ok || cod != mCodice )
             continue;
+
 
         if( strings[1].compare("P",Qt::CaseInsensitive)==0 )
             mRuolo = POR;
@@ -217,6 +234,10 @@ bool QPlayer::calcolaValore1314()
             mRuolo = CEN;
         else if( strings[1].compare("A",Qt::CaseInsensitive)==0 )
             mRuolo = ATT;
+
+        qDebug() << tr("Napoli -> Giocatore %1 trovato - Ruolo: %2").arg(mCodice).arg(mRuolo);
+
+
 
         mNome = strings[2];
 
@@ -281,6 +302,8 @@ bool QPlayer::calcolaValore1314()
         mMediaFCVec[NAP] = strings[19].toFloat( &ok );
         if( !ok )
             continue;
+
+        break;
     }
     // <<<<< parsing Napoli per cercare medie Napoli e bonus/malus
 
@@ -296,7 +319,7 @@ bool QPlayer::calcolaValore1314()
         qint64 lineLength = roma.readLine(buf, sizeof(buf));
         if (lineLength == -1)
         {
-            qDebug() << tr("Giocatore %1 non trovato").arg(mCodice);
+            qDebug() << tr("Roma -> Giocatore %1 non trovato").arg(mCodice);
             roma.close();
             return false;
         }
@@ -304,13 +327,15 @@ bool QPlayer::calcolaValore1314()
         QString line = buf;
         QStringList strings = line.split(",");
 
-        if( strings.size() != 22 ) // TODO Verificare!
+        if( strings.size() != 21 )
             continue;
 
         bool ok;
         int cod = strings[0].toInt(&ok);
         if( !ok || cod != mCodice )
             continue;
+
+        qDebug() << tr("Roma -> Giocatore %1 trovato").arg(mCodice);
 
         mMediaVec[ROM] = strings[17].toFloat( &ok );
         if( !ok )
@@ -319,6 +344,8 @@ bool QPlayer::calcolaValore1314()
         mMediaFCVec[ROM] = strings[19].toFloat( &ok );
         if( !ok )
             continue;
+
+        break;
     }
     // <<<<< parsing Roma per cercare medie Roma
 

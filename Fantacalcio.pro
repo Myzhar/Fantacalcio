@@ -18,12 +18,15 @@ SOURCES += main.cpp\
         mainwindow.cpp \
         src/qplayer.cpp \
         src/qteam.cpp \
-        src/qseason.cpp
+        src/qseason.cpp \
+    qteamwidget.cpp
 
 HEADERS  += mainwindow.h \
             include/config.h \
             include/qplayer.h \
             include/qseason.h \
-            include/qteam.h
+            include/qteam.h \
+    qteamwidget.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    qteamwidget.ui

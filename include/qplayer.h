@@ -58,6 +58,7 @@ public:
     int mValAcq13_14;
     bool mNuovoAcq;
     int mValIniz14_15;
+    int mValore;
 };
 
 #endif // QPLAYER_H

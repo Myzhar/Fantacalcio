@@ -20,6 +20,9 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
+private slots:
+    void on_pushButton_salva_clicked();
+
 private:
     Ui::MainWindow *ui;
 
