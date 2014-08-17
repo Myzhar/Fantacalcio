@@ -1,0 +1,42 @@
+Formula rivalutazione giocatori
+===============================
+
+Difensore: 
+gol_f = 2
+assist_f  = 2
+
+Centrocampista:
+gol_f = 1
+assist_f = 2
+
+Attaccante:
+gol_f = 1
+assist_f = 1
+
+Fattore costo:
+valore < 10: bonus_mul = 10
+valore < 20: bonul_mul = 5
+valore < 30: bonus_mul = 2.5
+valore > 80: malus_mul = 5.0
+valore > 60: malus_mul = 2.5
+valore > 40: malus_mul = 1.5
+
+presenze: valore x totpresenze x 0.01
+assenze:  valore x * (ultima_giornata-totpresenze) x 0.005
+gol: valore x tot_golsegnati x 0.025 x gol_f
+rig_parato: valore x totrigp x 0.10
+rig_sbagliato: valore x totrigsb x 0.05
+assist: valore x totass x 0.01 x $assist_f
+espulsione: valore x totesp x 0.01
+ammonizione: valore x totamm x 0.005
+gol_subito: valore x tot_golsubiti x 0.005
+media_voto: valore x (media_giornale - 6.0) x 0.2
+
+bonus_portiere: 1.0 - (tot_golsubiti/totpresenze)
+malus_attaccante: 1.0 - (tot_golsegnati/totpresenze)
+
+totale_bonus = (presenze+gol+rig_parato+assist+media_voto-assenze-gol_subito)*bonus_mul;
+totale_malus = (rig_sbagliato+espulsione+ammonizione)*$malus_refactor;
+
+Valore_finale: valore + (totale_bonus - totale_malus)
+
