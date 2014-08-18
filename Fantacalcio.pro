@@ -19,14 +19,17 @@ SOURCES += main.cpp\
         src/qplayer.cpp \
         src/qteam.cpp \
         src/qseason.cpp \
-    qteamwidget.cpp
+    qteamwidget.cpp \
+    qcessionedlg.cpp
 
 HEADERS  += mainwindow.h \
             include/config.h \
             include/qplayer.h \
             include/qseason.h \
             include/qteam.h \
-    qteamwidget.h
+    qteamwidget.h \
+    qcessionedlg.h
 
 FORMS    += mainwindow.ui \
-    qteamwidget.ui
+    qteamwidget.ui \
+    qcessionedlg.ui

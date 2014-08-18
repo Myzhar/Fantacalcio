@@ -12,19 +12,6 @@ QTeam::QTeam(QObject *parent) :
 {
 }
 
-//QTeam::QTeam(const QTeam& team)
-//{
-//    mNome = team.mNome;
-//    mPres = team.mPres;
-//    mStartBudget = team.mStartBudget;
-//    mBudget = team.mBudget;
-
-//    mPorList = team.mPorList;
-//    mDifList = team.mDifList;
-//    mCenList = team.mCenList;
-//    mAttList = team.mAttList;
-//}
-
 void QTeam::setParams( QString nome, QString pres, int startBudget )
 {
     mNome = nome;
@@ -41,10 +28,10 @@ void QTeam::getParams( QString& nome, QString& pres, int& startBudget, int& curr
     currBudget = mBudget;
 }
 
-bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore )
+bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore, int giornAcq )
 {
     QPlayer* gioc = new QPlayer();
-    if( !gioc->setInizParam( codice, nuovoAcq, valore ) )
+    if( !gioc->setInizParam( codice, nuovoAcq, valore, giornAcq ) )
         return false;
 
     if( gioc->mRuolo == POR )
@@ -59,6 +46,113 @@ bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore )
     return true;
 }
 
+QPlayer* QTeam::getGiocatore( int codice )
+{
+    for( int i=0; i<mPorList.size(); i++ )
+    {
+        if( mPorList[i]->mCodice == codice )
+            return mPorList[i];
+    }
+
+    for( int i=0; i<mDifList.size(); i++ )
+    {
+        if( mDifList[i]->mCodice == codice )
+            return mDifList[i];
+    }
+
+    for( int i=0; i<mCenList.size(); i++ )
+    {
+        if( mCenList[i]->mCodice == codice )
+            return mCenList[i];
+    }
+
+    for( int i=0; i<mAttList.size(); i++ )
+    {
+        if( mAttList[i]->mCodice == codice )
+            return mAttList[i];
+    }
+
+    return NULL;
+}
+
+bool QTeam::cediGiocatore( int codice, bool svaluta )
+{
+    for( int i=0; i<mPorList.size(); i++ )
+    {
+        if( mPorList[i]->mCodice == codice )
+        {
+            int val = mPorList[i]->mValore;
+
+            if( svaluta )
+                val = (int)(((float)val)-((float)val*0.1f)+0.5f);
+
+            mBudget += val;
+
+            delete mPorList[i];
+            mPorList.removeAt(i);
+
+            return true;
+        }
+    }
+
+    for( int i=0; i<mDifList.size(); i++ )
+    {
+        if( mDifList[i]->mCodice == codice )
+        {
+            int val = mDifList[i]->mValore;
+
+            if( svaluta )
+                val = (int)(((float)val)-((float)val*0.1f)+0.5f);
+
+            mBudget += val;
+
+            delete mDifList[i];
+            mDifList.removeAt(i);
+
+            return true;
+        }
+    }
+
+    for( int i=0; i<mCenList.size(); i++ )
+    {
+        if( mCenList[i]->mCodice == codice )
+        {
+            int val = mCenList[i]->mValore;
+
+            if( svaluta )
+                val = (int)(((float)val)-((float)val*0.1f)+0.5f);
+
+            mBudget += val;
+
+            delete mCenList[i];
+            mCenList.removeAt(i);
+
+            return true;
+        }
+    }
+
+    for( int i=0; i<mAttList.size(); i++ )
+    {
+        if( mAttList[i]->mCodice == codice )
+        {
+            int val = mAttList[i]->mValore;
+
+            if( svaluta )
+                val = (int)(((float)val)-((float)val*0.1f)+0.5f);
+
+            mBudget += val;
+
+            delete mAttList[i];
+            mAttList.removeAt(i);
+
+            return true;
+        }
+    }
+
+    qDebug() << tr("Giocatore %1 non in lista").arg(codice);
+    return false;
+}
+
 void QTeam::salvaSquadra(int giornata)
 {
     QFile squadra;
@@ -66,11 +160,45 @@ void QTeam::salvaSquadra(int giornata)
     squadra.setFileName( path );
     squadra.open( QIODevice::WriteOnly );
 
-    // TODO Salvare la Squadra
+    QString line;
+    line = tr("CREDITI,%1\r\n").arg(mBudget);
+    squadra.write( line.toStdString().c_str() );
+
+    line = tr("Ruolo,Codice,Nuovo,Valore,Giorn_Acq\r\n");
+    squadra.write( line.toStdString().c_str() );
+
+    for( int i=0; i<mPorList.size(); i++ )
+    {
+        line = tr("P,%1,%2,%3,%4\r\n").arg(mPorList[i]->mCodice).arg(1).arg(mPorList[i]->mValore).arg(giornata+1);
+        squadra.write( line.toStdString().c_str() );
+    }
+
+    for( int i=0; i<mDifList.size(); i++ )
+    {
+        line = tr("D,%1,%2,%3,%4\r\n").arg(mDifList[i]->mCodice).arg(1).arg(mDifList[i]->mValore).arg(giornata+1);
+        squadra.write( line.toStdString().c_str() );
+    }
+
+    for( int i=0; i<mCenList.size(); i++ )
+    {
+        line = tr("C,%1,%2,%3,%4\r\n").arg(mCenList[i]->mCodice).arg(1).arg(mCenList[i]->mValore).arg(giornata+1);
+        squadra.write( line.toStdString().c_str() );
+    }
+
+    for( int i=0; i<mAttList.size(); i++ )
+    {
+        line = tr("A,%1,%2,%3,%4\r\n").arg(mAttList[i]->mCodice).arg(1).arg(mAttList[i]->mValore).arg(giornata+1);
+        squadra.write( line.toStdString().c_str() );
+    }
 }
 
 bool QTeam::caricaSquadra(int giornata)
 {
+    mPorList.clear();
+    mDifList.clear();
+    mCenList.clear();
+    mAttList.clear();
+
     QFile squadra;
     QString path = tr("%1/%2_G%3.txt").arg(SQ_PATH).arg(mPres).arg(giornata);
     squadra.setFileName( path );
@@ -97,17 +225,353 @@ bool QTeam::caricaSquadra(int giornata)
             continue;
         }
 
-        if( strings.size()==4 )
+        if( strings.size()==5 )
         {
-            int codice = strings[1].toInt();
-            bool nuovo = strings[2].toInt()==1;
-            int val = strings[3].toInt();
+            bool ok;
+            int codice = strings[1].toInt(&ok);
+            if(!ok)
+                continue;
+            bool nuovo = strings[2].toInt(&ok)==1;
+            if(!ok)
+                continue;
+            int val = strings[3].toInt(&ok);
+            if(!ok)
+                continue;
+            int giornAcq = strings[4].toInt(&ok);
+            if(!ok)
+                continue;
 
-            aggiungiGioc( codice, nuovo, val );
+            aggiungiGioc( codice, nuovo, val, giornAcq );
         }
     }
 
     return true;
 }
+
+void QTeam::aggiornaTabella( QTeamWidget* widget )
+{
+    int totGioc = mPorList.size()+mDifList.size()+mCenList.size()+mAttList.size();
+
+    int daComp = 25-totGioc;
+    int maxSpesa = mBudget-daComp+1;
+
+    int capitale = mBudget;
+
+    if(daComp == 0)
+        maxSpesa--;
+
+    QTableWidget* tableWidget = widget->getTablePtr();
+
+    tableWidget->setUpdatesEnabled(false);
+    tableWidget->clearContents();
+
+    int row = 0;
+    foreach( const QPlayer* player, mPorList )
+    {
+        QTableWidgetItem* item0 = new QTableWidgetItem(tr("%1").arg(player->mCodice) );
+        tableWidget->setItem( row, 0, item0 );
+
+        QTableWidgetItem* item1 = new QTableWidgetItem(tr("%1").arg(player->mNome) );
+        tableWidget->setItem( row, 1, item1 );
+
+        QTableWidgetItem* item2 = new QTableWidgetItem(tr("%1").arg(player->mSquadra) );
+        tableWidget->setItem( row, 2, item2 );
+
+        QTableWidgetItem* item3 = new QTableWidgetItem(tr("%1").arg(player->mValore) );
+        tableWidget->setItem( row, 3, item3 );
+
+        capitale += player->mValore;
+
+        if(player->mNuovoAcq)
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(0) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+        else
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(player->mValAcq13_14) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+
+        QTableWidgetItem* item5 = new QTableWidgetItem(tr("%1").arg(player->mValIniz14_15) );
+        tableWidget->setItem( row, 5, item5 );
+
+        QTableWidgetItem* item6 = new QTableWidgetItem(tr("%1").arg(player->mGiornAcq) );
+        tableWidget->setItem( row, 6, item6 );
+
+        QTableWidgetItem* item7 = new QTableWidgetItem(tr("%1").arg(player->mGiocate) );
+        tableWidget->setItem( row, 7, item7 );
+
+        QTableWidgetItem* item8 = new QTableWidgetItem(tr("%1").arg(player->mAmm) );
+        tableWidget->setItem( row, 8, item8 );
+
+        QTableWidgetItem* item9 = new QTableWidgetItem(tr("%1").arg(player->mEsp) );
+        tableWidget->setItem( row, 9, item9 );
+
+        QTableWidgetItem* item10 = new QTableWidgetItem(tr("%1").arg(player->mGolFatti) );
+        tableWidget->setItem( row, 10, item10 );
+
+        QTableWidgetItem* item11 = new QTableWidgetItem(tr("%1").arg(player->mGolSubiti) );
+        tableWidget->setItem( row, 11, item11 );
+
+        QTableWidgetItem* item12 = new QTableWidgetItem(tr("%1").arg(player->mAssTot) );
+        tableWidget->setItem( row, 12, item12 );
+
+        QTableWidgetItem* item13 = new QTableWidgetItem(tr("%1").arg(player->mRigPar) );
+        tableWidget->setItem( row, 13, item13 );
+
+        QTableWidgetItem* item14 = new QTableWidgetItem(tr("%1").arg(player->mRigSbag) );
+        tableWidget->setItem( row, 14, item14 );
+
+        QTableWidgetItem* item15 = new QTableWidgetItem(tr("%1").arg(player->mRigSegn) );
+        tableWidget->setItem( row, 15, item15 );
+
+        QTableWidgetItem* item16 = new QTableWidgetItem(tr("%1").arg(player->mAutogol) );
+        tableWidget->setItem( row, 16, item16 );
+
+        QTableWidgetItem* item17 = new QTableWidgetItem(tr("%1").arg(player->mGolWin) );
+        tableWidget->setItem( row, 17, item17 );
+
+        QTableWidgetItem* item18 = new QTableWidgetItem(tr("%1").arg(player->mMedia) );
+        tableWidget->setItem( row, 18, item18 );
+
+        QTableWidgetItem* item19 = new QTableWidgetItem(tr("%1").arg(player->mMediaFC) );
+        tableWidget->setItem( row, 19, item19 );
+
+        row++;
+    }
+
+    row = 3;
+    foreach( const QPlayer* player, mDifList )
+    {
+        QTableWidgetItem* item0 = new QTableWidgetItem(tr("%1").arg(player->mCodice) );
+        tableWidget->setItem( row, 0, item0 );
+
+        QTableWidgetItem* item1 = new QTableWidgetItem(tr("%1").arg(player->mNome) );
+        tableWidget->setItem( row, 1, item1 );
+
+        QTableWidgetItem* item2 = new QTableWidgetItem(tr("%1").arg(player->mSquadra) );
+        tableWidget->setItem( row, 2, item2 );
+
+        QTableWidgetItem* item3 = new QTableWidgetItem(tr("%1").arg(player->mValore) );
+        tableWidget->setItem( row, 3, item3 );
+
+        capitale += player->mValore;
+
+        if(player->mNuovoAcq)
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(0) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+        else
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(player->mValAcq13_14) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+
+        QTableWidgetItem* item5 = new QTableWidgetItem(tr("%1").arg(player->mValIniz14_15) );
+        tableWidget->setItem( row, 5, item5 );
+
+        QTableWidgetItem* item6 = new QTableWidgetItem(tr("%1").arg(player->mGiornAcq) );
+        tableWidget->setItem( row, 6, item6 );
+
+        QTableWidgetItem* item7 = new QTableWidgetItem(tr("%1").arg(player->mGiocate) );
+        tableWidget->setItem( row, 7, item7 );
+
+        QTableWidgetItem* item8 = new QTableWidgetItem(tr("%1").arg(player->mAmm) );
+        tableWidget->setItem( row, 8, item8 );
+
+        QTableWidgetItem* item9 = new QTableWidgetItem(tr("%1").arg(player->mEsp) );
+        tableWidget->setItem( row, 9, item9 );
+
+        QTableWidgetItem* item10 = new QTableWidgetItem(tr("%1").arg(player->mGolFatti) );
+        tableWidget->setItem( row, 10, item10 );
+
+        QTableWidgetItem* item11 = new QTableWidgetItem(tr("%1").arg(player->mGolSubiti) );
+        tableWidget->setItem( row, 11, item11 );
+
+        QTableWidgetItem* item12 = new QTableWidgetItem(tr("%1").arg(player->mAssTot) );
+        tableWidget->setItem( row, 12, item12 );
+
+        QTableWidgetItem* item13 = new QTableWidgetItem(tr("%1").arg(player->mRigPar) );
+        tableWidget->setItem( row, 13, item13 );
+
+        QTableWidgetItem* item14 = new QTableWidgetItem(tr("%1").arg(player->mRigSbag) );
+        tableWidget->setItem( row, 14, item14 );
+
+        QTableWidgetItem* item15 = new QTableWidgetItem(tr("%1").arg(player->mRigSegn) );
+        tableWidget->setItem( row, 15, item15 );
+
+        QTableWidgetItem* item16 = new QTableWidgetItem(tr("%1").arg(player->mAutogol) );
+        tableWidget->setItem( row, 16, item16 );
+
+        QTableWidgetItem* item17 = new QTableWidgetItem(tr("%1").arg(player->mGolWin) );
+        tableWidget->setItem( row, 17, item17 );
+
+        QTableWidgetItem* item18 = new QTableWidgetItem(tr("%1").arg(player->mMedia) );
+        tableWidget->setItem( row, 18, item18 );
+
+        QTableWidgetItem* item19 = new QTableWidgetItem(tr("%1").arg(player->mMediaFC) );
+        tableWidget->setItem( row, 19, item19 );
+
+        row++;
+    }
+
+    row = 11;
+    foreach( const QPlayer* player, mCenList )
+    {
+        QTableWidgetItem* item0 = new QTableWidgetItem(tr("%1").arg(player->mCodice) );
+        tableWidget->setItem( row, 0, item0 );
+
+        QTableWidgetItem* item1 = new QTableWidgetItem(tr("%1").arg(player->mNome) );
+        tableWidget->setItem( row, 1, item1 );
+
+        QTableWidgetItem* item2 = new QTableWidgetItem(tr("%1").arg(player->mSquadra) );
+        tableWidget->setItem( row, 2, item2 );
+
+        QTableWidgetItem* item3 = new QTableWidgetItem(tr("%1").arg(player->mValore) );
+        tableWidget->setItem( row, 3, item3 );
+
+        capitale += player->mValore;
+
+        if(player->mNuovoAcq)
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(0) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+        else
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(player->mValAcq13_14) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+
+        QTableWidgetItem* item5 = new QTableWidgetItem(tr("%1").arg(player->mValIniz14_15) );
+        tableWidget->setItem( row, 5, item5 );
+
+        QTableWidgetItem* item6 = new QTableWidgetItem(tr("%1").arg(player->mGiornAcq) );
+        tableWidget->setItem( row, 6, item6 );
+
+        QTableWidgetItem* item7 = new QTableWidgetItem(tr("%1").arg(player->mGiocate) );
+        tableWidget->setItem( row, 7, item7 );
+
+        QTableWidgetItem* item8 = new QTableWidgetItem(tr("%1").arg(player->mAmm) );
+        tableWidget->setItem( row, 8, item8 );
+
+        QTableWidgetItem* item9 = new QTableWidgetItem(tr("%1").arg(player->mEsp) );
+        tableWidget->setItem( row, 9, item9 );
+
+        QTableWidgetItem* item10 = new QTableWidgetItem(tr("%1").arg(player->mGolFatti) );
+        tableWidget->setItem( row, 10, item10 );
+
+        QTableWidgetItem* item11 = new QTableWidgetItem(tr("%1").arg(player->mGolSubiti) );
+        tableWidget->setItem( row, 11, item11 );
+
+        QTableWidgetItem* item12 = new QTableWidgetItem(tr("%1").arg(player->mAssTot) );
+        tableWidget->setItem( row, 12, item12 );
+
+        QTableWidgetItem* item13 = new QTableWidgetItem(tr("%1").arg(player->mRigPar) );
+        tableWidget->setItem( row, 13, item13 );
+
+        QTableWidgetItem* item14 = new QTableWidgetItem(tr("%1").arg(player->mRigSbag) );
+        tableWidget->setItem( row, 14, item14 );
+
+        QTableWidgetItem* item15 = new QTableWidgetItem(tr("%1").arg(player->mRigSegn) );
+        tableWidget->setItem( row, 15, item15 );
+
+        QTableWidgetItem* item16 = new QTableWidgetItem(tr("%1").arg(player->mAutogol) );
+        tableWidget->setItem( row, 16, item16 );
+
+        QTableWidgetItem* item17 = new QTableWidgetItem(tr("%1").arg(player->mGolWin) );
+        tableWidget->setItem( row, 17, item17 );
+
+        QTableWidgetItem* item18 = new QTableWidgetItem(tr("%1").arg(player->mMedia) );
+        tableWidget->setItem( row, 18, item18 );
+
+        QTableWidgetItem* item19 = new QTableWidgetItem(tr("%1").arg(player->mMediaFC) );
+        tableWidget->setItem( row, 19, item19 );
+
+        row++;
+    }
+
+    row = 19;
+    foreach( const QPlayer* player, mAttList )
+    {
+        QTableWidgetItem* item0 = new QTableWidgetItem(tr("%1").arg(player->mCodice) );
+        tableWidget->setItem( row, 0, item0 );
+
+        QTableWidgetItem* item1 = new QTableWidgetItem(tr("%1").arg(player->mNome) );
+        tableWidget->setItem( row, 1, item1 );
+
+        QTableWidgetItem* item2 = new QTableWidgetItem(tr("%1").arg(player->mSquadra) );
+        tableWidget->setItem( row, 2, item2 );
+
+        QTableWidgetItem* item3 = new QTableWidgetItem(tr("%1").arg(player->mValore) );
+        tableWidget->setItem( row, 3, item3 );
+
+        capitale += player->mValore;
+
+        if(player->mNuovoAcq)
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(0) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+        else
+        {
+            QTableWidgetItem* item4 = new QTableWidgetItem(tr("%1").arg(player->mValAcq13_14) );
+            tableWidget->setItem( row, 4, item4 );
+        }
+
+        QTableWidgetItem* item5 = new QTableWidgetItem(tr("%1").arg(player->mValIniz14_15) );
+        tableWidget->setItem( row, 5, item5 );
+
+        QTableWidgetItem* item6 = new QTableWidgetItem(tr("%1").arg(player->mGiornAcq) );
+        tableWidget->setItem( row, 6, item6 );
+
+        QTableWidgetItem* item7 = new QTableWidgetItem(tr("%1").arg(player->mGiocate) );
+        tableWidget->setItem( row, 7, item7 );
+
+        QTableWidgetItem* item8 = new QTableWidgetItem(tr("%1").arg(player->mAmm) );
+        tableWidget->setItem( row, 8, item8 );
+
+        QTableWidgetItem* item9 = new QTableWidgetItem(tr("%1").arg(player->mEsp) );
+        tableWidget->setItem( row, 9, item9 );
+
+        QTableWidgetItem* item10 = new QTableWidgetItem(tr("%1").arg(player->mGolFatti) );
+        tableWidget->setItem( row, 10, item10 );
+
+        QTableWidgetItem* item11 = new QTableWidgetItem(tr("%1").arg(player->mGolSubiti) );
+        tableWidget->setItem( row, 11, item11 );
+
+        QTableWidgetItem* item12 = new QTableWidgetItem(tr("%1").arg(player->mAssTot) );
+        tableWidget->setItem( row, 12, item12 );
+
+        QTableWidgetItem* item13 = new QTableWidgetItem(tr("%1").arg(player->mRigPar) );
+        tableWidget->setItem( row, 13, item13 );
+
+        QTableWidgetItem* item14 = new QTableWidgetItem(tr("%1").arg(player->mRigSbag) );
+        tableWidget->setItem( row, 14, item14 );
+
+        QTableWidgetItem* item15 = new QTableWidgetItem(tr("%1").arg(player->mRigSegn) );
+        tableWidget->setItem( row, 15, item15 );
+
+        QTableWidgetItem* item16 = new QTableWidgetItem(tr("%1").arg(player->mAutogol) );
+        tableWidget->setItem( row, 16, item16 );
+
+        QTableWidgetItem* item17 = new QTableWidgetItem(tr("%1").arg(player->mGolWin) );
+        tableWidget->setItem( row, 17, item17 );
+
+        QTableWidgetItem* item18 = new QTableWidgetItem(tr("%1").arg(player->mMedia) );
+        tableWidget->setItem( row, 18, item18 );
+
+        QTableWidgetItem* item19 = new QTableWidgetItem(tr("%1").arg(player->mMediaFC) );
+        tableWidget->setItem( row, 19, item19 );
+
+        row++;
+    }
+
+    widget->setInfo( mBudget, capitale, daComp, maxSpesa );
+    tableWidget->setUpdatesEnabled(true);
+}
+
 
 

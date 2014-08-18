@@ -6,6 +6,7 @@
 #include <QTableWidget>
 
 #include "qplayer.h"
+#include "qteamwidget.h"
 
 class QTeam : public QObject
 {
@@ -17,11 +18,12 @@ public:
 
     void setParams(QString nome, QString pres, int startBudget );
     void getParams( QString& nome, QString& pres, int& startBudget, int& currBudget );
-    bool aggiungiGioc( int codice, bool nuovoAcq, int valore );
-
+    QPlayer* getGiocatore( int codice );
+    bool aggiungiGioc(int codice, bool nuovoAcq, int valore , int giornAcq);
+    bool cediGiocatore( int codice, bool svaluta );
     void salvaSquadra(int giornata);
     bool caricaSquadra(int giornata);
-    void aggiornaTabella( QTableWidget* tableWidget );
+    void aggiornaTabella(QTeamWidget *widget );
 
 protected:
 

@@ -27,7 +27,22 @@ bool QSeason::init2014_2015( int giornata )
     team6->setParams( "Stefano", "Stefano", 250 );
     team7->setParams( "F.C. Myzhar", "Walter", 250 );
 
-    team7->caricaSquadra( mGiornata );
+    if( !team0->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team1->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team2->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team3->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team4->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team5->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team6->caricaSquadra( mGiornata ) )
+        return false;
+    if( !team7->caricaSquadra( mGiornata ) )
+        return false;
 
     addTeam( team0 );
     addTeam( team1 );
@@ -38,5 +53,5 @@ bool QSeason::init2014_2015( int giornata )
     addTeam( team6 );
     addTeam( team7 );
 
-
+    return true;
 }

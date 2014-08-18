@@ -40,44 +40,11 @@ QPlayer::QPlayer(QObject *parent) :
     mValIniz14_15 = 0;
 }
 
-//QPlayer::QPlayer( const QPlayer& player )
-//{
-//    mCodice=player.mCodice;
-//    mRuolo=player.mRuolo;
-//    mNome=player.mNome;
-//    mSquadra=player.mSquadra;
-//    mGiornAcq=player.mGiornAcq;
-//    mGiocate=player.mGiocate;
-//    mAmm=player.mAmm;
-//    mEsp=player.mEsp;
-//    mGolFatti=player.mGolFatti;
-//    mGolSubiti=player.mGolSubiti;
-//    mAssTot=player.mAssTot;
-//    mAssMov=player.mAssMov;
-//    mAssFer=player.mAssFer;
-//    mRigPar=player.mRigPar;
-//    mRigSbag=player.mRigSbag;
-//    mRigSegn=player.mRigSegn;
-//    mAutogol=player.mAutogol;
-//    mGolWin=player.mGolWin;
-//    mMediaVec[0]=player.mMediaVec[0];
-//    mMediaVec[1]=player.mMediaVec[1];
-//    mMediaVec[2]=player.mMediaVec[2];
-//    mMediaFCVec[0]=player.mMediaFCVec[0];
-//    mMediaFCVec[1]=player.mMediaFCVec[1];
-//    mMediaFCVec[2]=player.mMediaFCVec[2];
-//    mMedia=player.mMedia;
-//    mMediaFC=player.mMediaFC;
-
-//    mValAcq13_14=player.mValAcq13_14;
-//    mNuovoAcq=player.mNuovoAcq;
-//    mValIniz14_15=player.mValIniz14_15;
-//}
-
-bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore)
+bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore, int giornAcq)
 {
     mCodice = codice;
     mNuovoAcq = nuovoAcq;
+    mGiornAcq = giornAcq;
 
     if(mNuovoAcq)
     {
@@ -86,7 +53,7 @@ bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore)
 
         mValore = mValIniz14_15;
 
-        return inizDaFile();
+        return inizDaFile( giornAcq );
     }
     else
     {
@@ -98,11 +65,13 @@ bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore)
     }
 }
 
-bool QPlayer::inizDaFile()
+bool QPlayer::inizDaFile( int giornata )
 {
     // >>>>> parsing Napoli per cercare nome ruolo e squadra
+    QString fileVoti = tr(VOTI_NAP).arg(giornata);
+
     QFile napoli;
-    QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(LISTA_INIZ); // TODO inserire file mercato iniziale da Fantagazzetta
+    QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVoti);
     napoli.setFileName( napoliPath );
     if( !napoli.open( QIODevice::ReadOnly ) )
     {
@@ -121,7 +90,9 @@ bool QPlayer::inizDaFile()
             return false;
         }
 
-        QString line = buf;
+        QString line = buf; // NOTE: occhio ai numeri con la virgola "xx,x"
+        line.replace("\"","");
+
         QStringList strings = line.split(",");
 
         if( strings.size() != 7 ) // TODO Verificare!
@@ -132,7 +103,7 @@ bool QPlayer::inizDaFile()
         if( !ok || cod != mCodice )
             continue;
 
-        qDebug() << tr("Giocatore %1 trovato").arg(mCodice);
+        //qDebug() << tr("Giocatore %1 trovato").arg(mCodice);
 
         if( strings[1].compare("P",Qt::CaseInsensitive)==0 )
             mRuolo = POR;
@@ -146,6 +117,8 @@ bool QPlayer::inizDaFile()
         mNome = strings[2];
 
         mSquadra = strings[3];
+
+        break;
     }
     // <<<<< parsing Napoli per cercare nome ruolo e squadra
 }
@@ -183,7 +156,7 @@ bool QPlayer::calcolaValore1314()
         if( !ok || cod != mCodice )
             continue;
 
-        qDebug() << tr("Milano -> Giocatore %1 trovato").arg(mCodice);
+        // qDebug() << tr("Milano -> Giocatore %1 trovato").arg(mCodice);
 
         mMediaVec[MIL] = strings[17].toFloat( &ok );
         if( !ok )
@@ -235,8 +208,7 @@ bool QPlayer::calcolaValore1314()
         else if( strings[1].compare("A",Qt::CaseInsensitive)==0 )
             mRuolo = ATT;
 
-        qDebug() << tr("Napoli -> Giocatore %1 trovato - Ruolo: %2").arg(mCodice).arg(mRuolo);
-
+        //qDebug() << tr("Napoli -> Giocatore %1 trovato - Ruolo: %2").arg(mCodice).arg(mRuolo);
 
 
         mNome = strings[2];
@@ -335,7 +307,7 @@ bool QPlayer::calcolaValore1314()
         if( !ok || cod != mCodice )
             continue;
 
-        qDebug() << tr("Roma -> Giocatore %1 trovato").arg(mCodice);
+        //qDebug() << tr("Roma -> Giocatore %1 trovato").arg(mCodice);
 
         mMediaVec[ROM] = strings[17].toFloat( &ok );
         if( !ok )
@@ -361,8 +333,105 @@ bool QPlayer::calcolaValore1314()
     mMediaFC = sumFC/3.0f;
     // <<<<< calcolo media e media FC
 
-    // TODO applicare formula 2013/2014
+    // >>>>> applicare formula 2013/2014
+    /*
+    Difensore:
+    gol_f = 2
+    assist_f  = 2
 
+    Centrocampista:
+    gol_f = 1
+    assist_f = 2
+
+    Attaccante:
+    gol_f = 1
+    assist_f = 1
+
+    Fattore costo:
+    valore < 10: bonus_mul = 7.5
+    valore < 20: bonul_mul = 5
+    valore < 30: bonus_mul = 2.5
+    valore > 80: malus_mul = 2.5
+    valore > 60: malus_mul = 2
+    valore > 40: malus_mul = 1.5
+
+    presenze: valore x totpresenze x 0.01
+    assenze:  valore x * (ultima_giornata-totpresenze) x 0.025
+    gol: valore x tot_golsegnati x gol_f x 0.025
+    rig_parato: valore x totrigp x 0.10
+    rig_sbagliato: valore x totrigsb x 0.05
+    autogol: valore x totautogol x 0.05
+    assist: valore x totass  x assist_f x 0.015
+    espulsione: valore x totesp x 0.01
+    ammonizione: valore x totamm x 0.005
+    gol_subito: valore x tot_golsubiti x 0.005
+    media_voto: valore x (media_giornale - 6.0) x 0.1
+
+    bonus_portiere: 1.0 - (tot_golsubiti/totpresenze)
+    malus_attaccante: (1.0 – (tot_golsegnati/totpresenze))
+
+    totale_bonus = (presenze+gol+rig_parato+assist+media_voto-assenze-gol_subito)*bonus_mul;
+    totale_malus = (rig_sbagliato+espulsione+ammonizione)*malus_mul;
+
+    Valore_finale: valore + (totale_bonus - totale_malus)
+    */
+    float gol_factor=1.0f,ass_factor=1.0f;
+    float bonus_mul=1.0f,malus_mul=1.0f;
+    float port = 0.0f;
+    float att = 0.0f;
+
+    if( mRuolo==POR || mRuolo==DIF )
+    {
+        gol_factor = 2.0f;
+        ass_factor = 2.0f;
+    }
+    else if( mRuolo==CEN )
+    {
+        gol_factor = 1.0f;
+        ass_factor = 2.0f;
+    }
+
+    if(mValAcq13_14 < 10 )
+        bonus_mul = 7.5f;
+    else if(mValAcq13_14 < 20 )
+        bonus_mul = 5.0f;
+    else if(mValAcq13_14 < 30 )
+        bonus_mul = 2.5f;
+    else if(mValAcq13_14 > 80 )
+        malus_mul = 2.5f;
+    else if(mValAcq13_14 > 60 )
+        malus_mul = 2.0f;
+    else if(mValAcq13_14 > 40 )
+        malus_mul = 1.5f;
+
+    float presenze = (float)mValAcq13_14 * (float)mGiocate * 0.01f;
+    float assenze = (float)mValAcq13_14 * (float)(38-mGiocate) * 0.025f;
+    float gol = (float)mValAcq13_14 * (float)mGolFatti * gol_factor * 0.025f;
+    float rig_par = (float)mValAcq13_14 * (float)mRigPar * 0.1f;
+    float rig_sbag = (float)mValAcq13_14 * (float)mRigSbag * 0.05f;
+    float autogol = (float)mValAcq13_14 * (float)mAutogol * 0.05f;
+    float assist = (float)mValAcq13_14 * (float)mAssTot * ass_factor * 0.015f;
+    float esp = (float)mValAcq13_14 * (float)mEsp * 0.01f;
+    float amm = (float)mValAcq13_14 * (float)mAmm * 0.005f;
+    float gol_sub = (float)mValAcq13_14 * (float)mGolSubiti * 0.005f;
+    float media = (float)mValAcq13_14 * ( mMedia - 6.0f) * 0.1f;
+
+    if( mRuolo==POR )
+        port = 1.0f-(mGolSubiti/mGiocate);
+    if( mRuolo==ATT )
+        att = 1.0f-(mGolFatti/mGiocate);
+
+    float giorn_factor = ((float)(39-mGiornAcq))/38.0f;
+
+    float bonus = (presenze+gol+rig_par+assist+port+(media>0.0f?media:0.0f))*bonus_mul*giorn_factor;
+    float malus = (rig_sbag+esp+amm+att+assenze+gol_sub+autogol+att+(media<0.0f?-media:0.0f))*malus_mul*giorn_factor;
+
+    mValIniz14_15 = mValAcq13_14 + (bonus - malus);
+    if( mValIniz14_15 <=0.0f )
+        mValIniz14_15 = 1.0f;
+    // <<<<< applicare formula 2013/2014
+
+    mValore = mValIniz14_15;
 
     return true;
 }

@@ -22,10 +22,10 @@ public:
 
 private:
     bool calcolaValore1314();
-    bool inizDaFile( );
+    bool inizDaFile( int giornata );
 
 public:
-    bool setInizParam( int codice, bool nuovoAcq, int valore );
+    bool setInizParam( int codice, bool nuovoAcq, int valore, int giornAcq );
 
 signals:
 
