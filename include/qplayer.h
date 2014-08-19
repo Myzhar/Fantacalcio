@@ -26,6 +26,7 @@ private:
 
 public:
     bool setInizParam( int codice, bool nuovoAcq, int valore, int giornAcq );
+    static int cercaCodiceCorretto(QString nome, int giornata);
 
 signals:
 

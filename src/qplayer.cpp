@@ -65,6 +65,46 @@ bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore, int giornAcq)
     }
 }
 
+int QPlayer::cercaCodiceCorretto(QString nome, int giornata)
+{
+    // >>>>> parsing Napoli per cercare medie Napoli e bonus/malus
+    QFile napoli;
+    QString napoliPath;
+    if( giornata < 0 )
+    {
+        napoliPath = tr("%1/%2").arg(STAT_INIZ_PATH).arg(STAT_NAP);
+    }
+    else
+    {
+        QString fileVoti = tr(VOTI_NAP).arg(giornata);
+        napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVoti);
+    }
+
+    napoli.setFileName( napoliPath );
+    napoli.open( QIODevice::ReadOnly );
+
+    char buf[BUF_SIZE];
+    while(1)
+    {
+        qint64 lineLength = napoli.readLine(buf, sizeof(buf));
+        if (lineLength == -1)
+        {
+            qDebug() << tr("Giocatore %1 non trovato").arg(nome);
+            napoli.close();
+            return -1;
+        }
+
+        QString line = buf;
+        QStringList strings = line.split(",");
+
+        if( strings.size() != 7 ) // TODO Verificare con file voti (dovrebbe essere 20)!
+            continue;
+
+        if( nome.compare( strings[2],Qt::CaseInsensitive)==0 )
+            return strings[0].toInt();
+    }
+}
+
 bool QPlayer::inizDaFile( int giornata )
 {
     // >>>>> parsing Napoli per cercare nome ruolo e squadra
@@ -95,7 +135,7 @@ bool QPlayer::inizDaFile( int giornata )
 
         QStringList strings = line.split(",");
 
-        if( strings.size() != 7 ) // TODO Verificare!
+        if( strings.size() != 7 ) // TODO Verificare con file voti (dovrebbe essere 20)!
             continue;
 
         bool ok;

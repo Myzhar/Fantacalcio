@@ -28,11 +28,14 @@ void QTeam::getParams( QString& nome, QString& pres, int& startBudget, int& curr
     currBudget = mBudget;
 }
 
-bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore, int giornAcq )
+QPlayer *QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore, int giornAcq )
 {
     QPlayer* gioc = new QPlayer();
     if( !gioc->setInizParam( codice, nuovoAcq, valore, giornAcq ) )
-        return false;
+    {
+        delete gioc;
+        return NULL;
+    }
 
     if( gioc->mRuolo == POR )
         mPorList << gioc;
@@ -43,7 +46,7 @@ bool QTeam::aggiungiGioc( int codice, bool nuovoAcq, int valore, int giornAcq )
     else if( gioc->mRuolo == ATT )
         mAttList << gioc;
 
-    return true;
+    return gioc;
 }
 
 QPlayer* QTeam::getGiocatore( int codice )
@@ -73,6 +76,60 @@ QPlayer* QTeam::getGiocatore( int codice )
     }
 
     return NULL;
+}
+
+bool QTeam::cancellaGiocatore( int codice )
+{
+    for( int i=0; i<mPorList.size(); i++ )
+    {
+        if( mPorList[i]->mCodice == codice )
+        {
+            delete mPorList[i];
+            mPorList.removeAt(i);
+
+            qDebug() << tr("Rimosso giocatore %1").arg(codice);
+            return true;
+        }
+    }
+
+    for( int i=0; i<mDifList.size(); i++ )
+    {
+        if( mDifList[i]->mCodice == codice )
+        {
+            delete mDifList[i];
+            mDifList.removeAt(i);
+
+            qDebug() << tr("Rimosso giocatore %1").arg(codice);
+            return true;
+        }
+    }
+
+    for( int i=0; i<mCenList.size(); i++ )
+    {
+        if( mCenList[i]->mCodice == codice )
+        {
+            delete mCenList[i];
+            mCenList.removeAt(i);
+
+            qDebug() << tr("Rimosso giocatore %1").arg(codice);
+            return true;
+        }
+    }
+
+    for( int i=0; i<mAttList.size(); i++ )
+    {
+        if( mAttList[i]->mCodice == codice )
+        {
+            delete mAttList[i];
+            mAttList.removeAt(i);
+
+            qDebug() << tr("Rimosso giocatore %1").arg(codice);
+            return true;
+        }
+    }
+
+    qDebug() << tr("Giocatore %1 non in lista").arg(codice);
+    return false;
 }
 
 bool QTeam::cediGiocatore( int codice, bool svaluta )
@@ -169,25 +226,25 @@ void QTeam::salvaSquadra(int giornata)
 
     for( int i=0; i<mPorList.size(); i++ )
     {
-        line = tr("P,%1,%2,%3,%4\r\n").arg(mPorList[i]->mCodice).arg(1).arg(mPorList[i]->mValore).arg(giornata+1);
+        line = tr("P,%1,%2,%3,%4,%5\r\n").arg(mPorList[i]->mCodice).arg(1).arg(mPorList[i]->mValore).arg(giornata).arg(mPorList[i]->mNome);
         squadra.write( line.toStdString().c_str() );
     }
 
     for( int i=0; i<mDifList.size(); i++ )
     {
-        line = tr("D,%1,%2,%3,%4\r\n").arg(mDifList[i]->mCodice).arg(1).arg(mDifList[i]->mValore).arg(giornata+1);
+        line = tr("D,%1,%2,%3,%4,%5\r\n").arg(mDifList[i]->mCodice).arg(1).arg(mDifList[i]->mValore).arg(giornata).arg(mDifList[i]->mNome);
         squadra.write( line.toStdString().c_str() );
     }
 
     for( int i=0; i<mCenList.size(); i++ )
     {
-        line = tr("C,%1,%2,%3,%4\r\n").arg(mCenList[i]->mCodice).arg(1).arg(mCenList[i]->mValore).arg(giornata+1);
+        line = tr("C,%1,%2,%3,%4,%5\r\n").arg(mCenList[i]->mCodice).arg(1).arg(mCenList[i]->mValore).arg(giornata).arg(mCenList[i]->mNome);
         squadra.write( line.toStdString().c_str() );
     }
 
     for( int i=0; i<mAttList.size(); i++ )
     {
-        line = tr("A,%1,%2,%3,%4\r\n").arg(mAttList[i]->mCodice).arg(1).arg(mAttList[i]->mValore).arg(giornata+1);
+        line = tr("A,%1,%2,%3,%4,%5\r\n").arg(mAttList[i]->mCodice).arg(1).arg(mAttList[i]->mValore).arg(giornata).arg(mAttList[i]->mNome);
         squadra.write( line.toStdString().c_str() );
     }
 }
@@ -204,6 +261,8 @@ bool QTeam::caricaSquadra(int giornata)
     squadra.setFileName( path );
     if( !squadra.open( QIODevice::ReadOnly ) )
         return false;
+
+    bool daSalvare = false;
 
     char buf[BUF_SIZE];
     while(1)
@@ -225,7 +284,7 @@ bool QTeam::caricaSquadra(int giornata)
             continue;
         }
 
-        if( strings.size()==5 )
+        if( strings.size()==6 )
         {
             bool ok;
             int codice = strings[1].toInt(&ok);
@@ -241,8 +300,45 @@ bool QTeam::caricaSquadra(int giornata)
             if(!ok)
                 continue;
 
-            aggiungiGioc( codice, nuovo, val, giornAcq );
+            QPlayer* gioc = aggiungiGioc( codice, nuovo, val, giornAcq );
+            strings[5].remove( "\r" );
+            strings[5].remove( "\n" );
+
+            if( nuovo==0 && giornata==0 ) // Conversione di stagione!
+            {
+                gioc->mGiornAcq = 0;
+                gioc->mNuovoAcq = 1;
+                int codiceCorr = QPlayer::cercaCodiceCorretto( strings[5],giornata );
+                gioc->mCodice = codiceCorr;
+                daSalvare = true;
+            }
+
+            strings[5].remove( "\r" );
+            strings[5].remove( "\n" );
+
+            if( !gioc || strings[5].compare( gioc->mNome )!=0 )
+            {
+                qDebug() << tr("%3 - Il codice %1 non corrisponde al giocatore %2").arg(codice).arg(strings[5]).arg(mPres);
+
+                int codiceCorr = QPlayer::cercaCodiceCorretto( strings[5],giornata );
+                if( codiceCorr>0 )
+                {
+                    if(gioc)
+                        cancellaGiocatore(codice);
+
+                    aggiungiGioc( codiceCorr, nuovo, val, giornata );
+
+                    daSalvare = true;
+                    qDebug() << tr("%3 - Il codice corretto del giocatore %2 è %1").arg(codiceCorr).arg(strings[5]).arg(mPres);
+                }
+            }
         }
+    }
+
+    if(daSalvare)
+    {
+        salvaSquadra(giornata);
+        qDebug() << tr("Salvate modifiche a squadra %1 per la giornata %2").arg(mPres).arg(giornata);
     }
 
     return true;

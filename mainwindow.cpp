@@ -98,6 +98,8 @@ void MainWindow::on_spinBox_valueChanged(const QString &arg1)
         ui->pushButton_salva->setEnabled(true);
     }
 
+    QTeamWidget* wdgArray[8] = {ui->widget_1,ui->widget_2,ui->widget_3,ui->widget_4,ui->widget_5,ui->widget_6,ui->widget_7,ui->widget_8};
+
     for( int i=0; i<8; i++ )
     {
         if( !mStag14_15.getTeam( i )->caricaSquadra( giornata ) )
@@ -109,28 +111,11 @@ void MainWindow::on_spinBox_valueChanged(const QString &arg1)
             QMessageBox::warning( this, tr("Attenzione"),
                                   tr("La squadra %1 per la giornata %2 non esiste ").arg(nome).arg(giornata) );
 
-            ui->widget_1->initTable();
-            ui->widget_2->initTable();
-            ui->widget_3->initTable();
-            ui->widget_4->initTable();
-            ui->widget_5->initTable();
-            ui->widget_6->initTable();
-            ui->widget_7->initTable();
-            ui->widget_8->initTable();
-
-            unsetCursor();
-            return;
+            wdgArray[i]->initTable();
         }
+        else
+            mStag14_15.getTeam(i)->aggiornaTabella( wdgArray[i] );
     }
-
-    mStag14_15.getTeam(0)->aggiornaTabella( ui->widget_1 );
-    mStag14_15.getTeam(1)->aggiornaTabella( ui->widget_2 );
-    mStag14_15.getTeam(2)->aggiornaTabella( ui->widget_3 );
-    mStag14_15.getTeam(3)->aggiornaTabella( ui->widget_4 );
-    mStag14_15.getTeam(4)->aggiornaTabella( ui->widget_5 );
-    mStag14_15.getTeam(5)->aggiornaTabella( ui->widget_6 );
-    mStag14_15.getTeam(6)->aggiornaTabella( ui->widget_7 );
-    mStag14_15.getTeam(7)->aggiornaTabella( ui->widget_8 );
 
     unsetCursor();
 }

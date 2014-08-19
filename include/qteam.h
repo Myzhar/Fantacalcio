@@ -19,13 +19,15 @@ public:
     void setParams(QString nome, QString pres, int startBudget );
     void getParams( QString& nome, QString& pres, int& startBudget, int& currBudget );
     QPlayer* getGiocatore( int codice );
-    bool aggiungiGioc(int codice, bool nuovoAcq, int valore , int giornAcq);
+    QPlayer* aggiungiGioc(int codice, bool nuovoAcq, int valore , int giornAcq);
     bool cediGiocatore( int codice, bool svaluta );
+
     void salvaSquadra(int giornata);
     bool caricaSquadra(int giornata);
     void aggiornaTabella(QTeamWidget *widget );
 
 protected:
+    bool cancellaGiocatore( int codice );
 
 signals:
 
