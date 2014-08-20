@@ -23,6 +23,7 @@ public:
 private:
     bool calcolaValore1314();
     bool inizDaFile( int giornata );
+    int calcolaRivalutazione( int giornata );
 
 public:
     bool setInizParam( int codice, bool nuovoAcq, int valore, int giornAcq );

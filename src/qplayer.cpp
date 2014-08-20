@@ -161,6 +161,15 @@ bool QPlayer::inizDaFile( int giornata )
         break;
     }
     // <<<<< parsing Napoli per cercare nome ruolo e squadra
+
+    if( giornata >0 )
+    {
+        // TODO caricare valori da statistiche
+
+        mValore = calcolaRivalutazione( giornata );
+    }
+
+    return true;
 }
 
 bool QPlayer::calcolaValore1314()
@@ -472,6 +481,84 @@ bool QPlayer::calcolaValore1314()
     // <<<<< applicare formula 2013/2014
 
     mValore = mValIniz14_15;
+    //mValore = calcolaRivalutazione( 38 );
 
     return true;
 }
+
+int QPlayer::calcolaRivalutazione( int giornata )
+{
+    int val_iniz = mValIniz14_15;
+    // int val_iniz = mValAcq13_14; // Usato per debuggare la formula!!!
+
+    float gol_factor=1.0f,ass_factor=1.0f;
+    float bonus_mul=1.0f,malus_mul=1.0f;
+
+    if( mRuolo==POR || mRuolo==DIF )
+    {
+        gol_factor = 2.0f;
+        ass_factor = 2.0f;
+    }
+    else if( mRuolo==CEN )
+    {
+        gol_factor = 1.5f;
+    }
+    else if( mRuolo==ATT )
+    {
+        ass_factor = 1.5f;
+    }
+
+    if(mValIniz14_15 < 10 )
+        bonus_mul = 5.0f;
+    else if(mValIniz14_15 < 20 )
+        bonus_mul = 3.0f;
+    else if(mValIniz14_15 < 30 )
+        bonus_mul = 1.5f;
+    else if(mValIniz14_15 > 250 )
+        malus_mul = 3.5f;
+    else if(mValIniz14_15 > 150 )
+        malus_mul = 2.5f;
+    else if(mValIniz14_15 > 100 )
+        malus_mul = 2.0f;
+    else if(mValIniz14_15 > 80 )
+        malus_mul = 1.75f;
+    else if(mValIniz14_15 > 60 )
+        malus_mul = 1.5f;
+    else if(mValIniz14_15 > 40 )
+        malus_mul = 1.25f;
+
+    float presenze = ((float)mValIniz14_15 * 0.015f) * (float)mGiocate;               // 15% ogni 10 giornate giocate - max 57%
+    float gol =      ((float)mValIniz14_15 * 0.025f) * (float)mGolFatti * gol_factor; // 2.5% ogni gol fatto - max 60%/75%
+    float rig_par =  ((float)mValIniz14_15 * 0.15f)  * (float)mRigPar;                // 15% ogni rigore parato - max 45%/75%
+    float assist =   ((float)mValIniz14_15 * 0.02f)  * (float)mAssTot * ass_factor;   // 2% ogni assist fatto - max 20%/30%
+
+    float assenze =  ((float)mValIniz14_15 * 0.02f)  * (float)(giornata-mGiocate);    // 20% ogni 10 giornate non giocate - max 76%
+    float autogol =  ((float)mValIniz14_15 * 0.075f) * (float)mAutogol;               // 7.5% ogni autogol - max 15%/22.5%
+    float rig_sbag = ((float)mValIniz14_15 * 0.1f)   * (float)mRigSbag;               // 10% ogni rigore sbagliato - max 30%/50%
+    float esp =      ((float)mValIniz14_15 * 0.04f)  * (float)mEsp;                   // 4% ogni espulsione - max 30%/50%
+    float amm =      ((float)mValIniz14_15 * 0.02f)  * (float)mAmm;                   // 2% ogni ammonizione - max 20%/30%
+    float gol_sub =  ((float)mValIniz14_15 * 0.015f) * (float)mGolSubiti;             // 1.5% ogni gol subito - max 40%/50%
+
+    float media =    ((float)mValIniz14_15 * 0.4f)   * (mMedia - 6.0f);               // 20% ogni 0.5 punti di media
+
+    /*
+    float port = 0.0f;
+    float att = 0.0f;
+    if( mRuolo==POR )
+        port = ((float)mValIniz14_15 * 0.2f) * (1.0f-(mGolSubiti/mGiocate)); // 20% ogni 0.5 punti di media gol subiti
+    if( mRuolo==ATT )
+        att =  ((float)mValIniz14_15 * 0.2f) * (1.0f-(mGolFatti/mGiocate));  // 20% ogni 0.5 punti di media gol fatti*/
+
+    float giorn_factor = ((float)(38-mGiornAcq))/38.0f; // Fattore di riduzione in base alla giornata di acquisto
+
+    float bonus = (presenze+gol+rig_par+assist+(media>0.0f?media:0.0f))*bonus_mul*giorn_factor;
+    float malus = (assenze+autogol+rig_sbag+esp+amm+gol_sub+(media<0.0f?-media:0.0f))*malus_mul*giorn_factor;
+
+    int nuovo_valore = mValIniz14_15 + (bonus - malus);
+    if( nuovo_valore <=0.0f )
+        nuovo_valore = 1.0f;
+    // <<<<< applicare formula 2013/2014
+
+    return nuovo_valore;
+}
+
