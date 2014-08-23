@@ -1,0 +1,2 @@
+CREDITI,250
+Ruolo,Codice,Nuovo,Valore,Giorn_Acq
