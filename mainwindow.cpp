@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     // Inizializzazione stagione 2014/2015 a partire da 2013/2015
-    mStag14_15.init2014_2015( -1 );
+    mStag14_15.init2014_2015( ui->spinBox->value() );
 
     // >>>>> Inizializzazione Tabs
     for( int i=0; i<8; i++ )
@@ -149,7 +149,7 @@ void MainWindow::onEliminaGiocatore_squadra1( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 0 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -162,7 +162,7 @@ void MainWindow::onEliminaGiocatore_squadra2( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 1 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -175,7 +175,7 @@ void MainWindow::onEliminaGiocatore_squadra3( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 2 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -188,7 +188,7 @@ void MainWindow::onEliminaGiocatore_squadra4( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 3 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -201,7 +201,7 @@ void MainWindow::onEliminaGiocatore_squadra5( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 4 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -214,7 +214,7 @@ void MainWindow::onEliminaGiocatore_squadra6( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 5 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -227,7 +227,7 @@ void MainWindow::onEliminaGiocatore_squadra7( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 6 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {
@@ -240,7 +240,7 @@ void MainWindow::onEliminaGiocatore_squadra8( int codice )
 {
     QPlayer* gioc = mStag14_15.getTeam( 7 )->getGiocatore( codice );
 
-    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValIniz14_15, gioc->mValore, this);
+    QCessioneDlg dlg(gioc->mNome, gioc->mSquadra, gioc->mValAcquisto, gioc->mValore, this);
 
     if( dlg.exec()==QDialog::Accepted )
     {

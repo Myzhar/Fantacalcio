@@ -19,7 +19,7 @@ public:
     void setParams(QString nome, QString pres, int startBudget );
     void getParams( QString& nome, QString& pres, int& startBudget, int& currBudget );
     QPlayer* getGiocatore( int codice );
-    QPlayer* aggiungiGioc(int codice, bool nuovoAcq, int valore , int giornAcq);
+    QPlayer* aggiungiGioc(int codice, bool nuovoAcq, int valore , int giornata , int giorn_acq);
     bool cediGiocatore( int codice, bool svaluta );
 
     void salvaSquadra(int giornata);

@@ -1,6 +1,7 @@
 #include "qteamwidget.h"
 #include "ui_qteamwidget.h"
 #include <QStringList>
+#include <QHeaderView>
 
 QTeamWidget::QTeamWidget(QWidget *parent) :
     QWidget(parent),

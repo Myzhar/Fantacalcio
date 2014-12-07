@@ -1,4 +1,4 @@
-#include "include\qseason.h"
+#include "qseason.h"
 
 QSeason::QSeason(QObject *parent) :
     QObject(parent)

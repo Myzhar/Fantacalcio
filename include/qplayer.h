@@ -24,9 +24,10 @@ private:
     bool calcolaValore1314();
     bool inizDaFile( int giornata );
     int calcolaRivalutazione( int giornata );
+    bool updateStats( int giornata );
 
 public:
-    bool setInizParam( int codice, bool nuovoAcq, int valore, int giornAcq );
+    bool setInizParam( int codice, bool nuovoAcq, int valore, int giornata, int giorn_acq );
     static int cercaCodiceCorretto(QString nome, int giornata);
 
 signals:
@@ -59,7 +60,7 @@ public:
 
     int mValAcq13_14;
     bool mNuovoAcq;
-    int mValIniz14_15;
+    int mValAcquisto;
     int mValore;
 };
 

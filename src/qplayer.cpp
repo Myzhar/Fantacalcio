@@ -1,4 +1,4 @@
-#include "include\qplayer.h"
+#include "qplayer.h"
 #include <QFile>
 #include <QStringList>
 #include <QDebug>
@@ -37,29 +37,29 @@ QPlayer::QPlayer(QObject *parent) :
 
     mValAcq13_14 = 0;
     mNuovoAcq = false;
-    mValIniz14_15 = 0;
+    mValAcquisto = 0;
 }
 
-bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore, int giornAcq)
+bool QPlayer::setInizParam(int codice, bool nuovoAcq, int valore, int giornata, int giorn_acq)
 {
     mCodice = codice;
     mNuovoAcq = nuovoAcq;
-    mGiornAcq = giornAcq;
+    mGiornAcq = giorn_acq;
 
     if(mNuovoAcq)
     {
         mValAcq13_14 = 0;
-        mValIniz14_15 = valore;
+        mValAcquisto = valore;
 
-        mValore = mValIniz14_15;
+        mValore = mValAcquisto;
 
-        return inizDaFile( giornAcq );
+        return inizDaFile( giornata );
     }
     else
     {
         mValAcq13_14 = valore;
 
-        mValore = mValIniz14_15;
+        mValore = mValAcquisto;
 
         return calcolaValore1314();
     }
@@ -73,6 +73,11 @@ int QPlayer::cercaCodiceCorretto(QString nome, int giornata)
     if( giornata < 0 )
     {
         napoliPath = tr("%1/%2").arg(STAT_INIZ_PATH).arg(STAT_NAP);
+    }
+    else if( giornata == 0 )
+    {
+        QString fileVoti = tr(VOTI_NAP).arg(giornata);
+        napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVoti);
     }
     else
     {
@@ -97,7 +102,10 @@ int QPlayer::cercaCodiceCorretto(QString nome, int giornata)
         QString line = buf;
         QStringList strings = line.split(",");
 
-        if( strings.size() != 7 ) // TODO Verificare con file voti (dovrebbe essere 20)!
+        if( giornata==0 && strings.size() != 7 ) // TODO Verificare con file voti (dovrebbe essere 20)!
+            continue;
+
+        if( giornata>0 && strings.size() != 21 ) // TODO Verificare con file voti (dovrebbe essere 20)!
             continue;
 
         if( nome.compare( strings[2],Qt::CaseInsensitive)==0 )
@@ -108,7 +116,12 @@ int QPlayer::cercaCodiceCorretto(QString nome, int giornata)
 bool QPlayer::inizDaFile( int giornata )
 {
     // >>>>> parsing Napoli per cercare nome ruolo e squadra
-    QString fileVoti = tr(VOTI_NAP).arg(giornata);
+    QString fileVoti;
+
+    if(giornata==0)
+        fileVoti = tr(QUOT_NAP).arg(giornata);
+    else if(giornata>=0)
+        fileVoti = tr(VOTI_NAP).arg(giornata);
 
     QFile napoli;
     QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVoti);
@@ -126,7 +139,11 @@ bool QPlayer::inizDaFile( int giornata )
         if (lineLength == -1)
         {
             qDebug() << tr("Giocatore %1 non trovato").arg(mCodice);
+            qDebug() << tr("Valori di default per il giocatore %1").arg(mCodice);
             napoli.close();
+
+            mValore = calcolaRivalutazione( giornata );
+
             return false;
         }
 
@@ -135,7 +152,10 @@ bool QPlayer::inizDaFile( int giornata )
 
         QStringList strings = line.split(",");
 
-        if( strings.size() != 7 ) // TODO Verificare con file voti (dovrebbe essere 20)!
+        if( giornata==0 && strings.size() != 7 )
+            continue;
+
+        if( giornata>0 && strings.size() != 21 )
             continue;
 
         bool ok;
@@ -164,12 +184,233 @@ bool QPlayer::inizDaFile( int giornata )
 
     if( giornata >0 )
     {
-        // TODO caricare valori da statistiche
+        if( !updateStats( giornata ) )
+        {
+            qDebug() << tr("Impossibile aggionare le statistiche del giocatore %1").arg(mCodice);
+            return false;
+        }
 
         mValore = calcolaRivalutazione( giornata );
     }
 
     return true;
+}
+
+bool QPlayer::updateStats( int giornata )
+{
+    if( mCodice==-1 )
+        return false;
+
+    // >>>>> parsing Milano per cercare medie Milano
+    QFile milano;
+    QString fileVotiMilano = tr(VOTI_MIL).arg(giornata);
+    QString milanoPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVotiMilano);
+
+    milano.setFileName( milanoPath );
+    milano.open( QIODevice::ReadOnly );
+    while(1)
+    {
+        char buf[BUF_SIZE];
+
+        qint64 lineLength = milano.readLine(buf, sizeof(buf));
+        if (lineLength == -1)
+        {
+            qDebug() << tr("Milano -> Giocatore %1 non trovato").arg(mCodice);
+            milano.close();
+            return false;
+        }
+
+        QString line = buf;
+        QStringList strings = line.split(",");
+
+        if( strings.size() != 21 )
+            continue;
+
+        bool ok;
+        int cod = strings[0].toInt(&ok);
+        if( !ok || cod != mCodice )
+            continue;
+
+        // qDebug() << tr("Milano -> Giocatore %1 trovato").arg(mCodice);
+
+        mMediaVec[MIL] = strings[17].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        mMediaFCVec[MIL] = strings[19].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        break;
+    }
+    // <<<<< parsing Milano per cercare medie Milano
+
+    // >>>>> parsing Napoli per cercare medie Napoli e bonus/malus
+    QFile napoli;
+    QString fileVotiNapoli = tr(VOTI_NAP).arg(giornata);
+    QString napoliPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVotiNapoli);
+
+    napoli.setFileName( napoliPath );
+    napoli.open( QIODevice::ReadOnly );
+    while(1)
+    {
+        char buf[BUF_SIZE];
+
+        qint64 lineLength = napoli.readLine(buf, sizeof(buf));
+        if (lineLength == -1)
+        {
+            qDebug() << tr("Napoli -> Giocatore %1 non trovato").arg(mCodice);
+            napoli.close();
+            return false;
+        }
+
+        QString line = buf;
+        QStringList strings = line.split(",");
+
+        if( strings.size() != 21 )
+            continue;
+
+        bool ok;
+        int cod = strings[0].toInt(&ok);
+        if( !ok || cod != mCodice )
+            continue;
+
+
+        if( strings[1].compare("P",Qt::CaseInsensitive)==0 )
+            mRuolo = POR;
+        else if( strings[1].compare("D",Qt::CaseInsensitive)==0 )
+            mRuolo = DIF;
+        else if( strings[1].compare("C",Qt::CaseInsensitive)==0 )
+            mRuolo = CEN;
+        else if( strings[1].compare("A",Qt::CaseInsensitive)==0 )
+            mRuolo = ATT;
+
+        //qDebug() << tr("Napoli -> Giocatore %1 trovato - Ruolo: %2").arg(mCodice).arg(mRuolo);
+
+
+        mNome = strings[2];
+
+        mSquadra = strings[3];
+
+        mGiocate = strings[4].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mAmm = strings[5].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mEsp = strings[6].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mGolFatti = strings[7].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mGolSubiti = strings[8].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mAssTot = strings[9].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mAssMov = strings[10].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mAssFer = strings[11].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mRigPar = strings[12].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mRigSbag = strings[13].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mRigSegn = strings[14].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mAutogol = strings[15].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mGolWin = strings[16].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mMediaVec[NAP] = strings[17].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        mMediaFCVec[NAP] = strings[19].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        break;
+    }
+    // <<<<< parsing Napoli per cercare medie Napoli e bonus/malus
+
+    // >>>>> parsing Roma per cercare medie Roma
+    QFile roma;
+    QString fileVotiRoma = tr(VOTI_NAP).arg(giornata);
+    QString romaPath = tr("%1/%2").arg(VOTI_PATH).arg(fileVotiRoma);
+
+    roma.setFileName( romaPath );
+    roma.open( QIODevice::ReadOnly );
+    while(1)
+    {
+        char buf[BUF_SIZE];
+
+        qint64 lineLength = roma.readLine(buf, sizeof(buf));
+        if (lineLength == -1)
+        {
+            qDebug() << tr("Roma -> Giocatore %1 non trovato").arg(mCodice);
+            roma.close();
+            return false;
+        }
+
+        QString line = buf;
+        QStringList strings = line.split(",");
+
+        if( strings.size() != 21 )
+            continue;
+
+        bool ok;
+        int cod = strings[0].toInt(&ok);
+        if( !ok || cod != mCodice )
+            continue;
+
+        //qDebug() << tr("Roma -> Giocatore %1 trovato").arg(mCodice);
+
+        mMediaVec[ROM] = strings[17].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        mMediaFCVec[ROM] = strings[19].toFloat( &ok );
+        if( !ok )
+            continue;
+
+        break;
+    }
+    // <<<<< parsing Roma per cercare medie Roma
+
+    // >>>>> calcolo media e media FC
+    float sum = 0.0f;
+    float sumFC = 0.0f;
+    for( int i=0; i<3; i++ )
+    {
+        sum += mMediaVec[i];
+        sumFC += mMediaFCVec[i];
+    }
+    mMedia = sum/3.0f;
+    mMediaFC = sumFC/3.0f;
+    // <<<<< calcolo media e media FC
 }
 
 bool QPlayer::calcolaValore1314()
@@ -475,12 +716,12 @@ bool QPlayer::calcolaValore1314()
     float bonus = (presenze+gol+rig_par+assist+port+(media>0.0f?media:0.0f))*bonus_mul*giorn_factor;
     float malus = (rig_sbag+esp+amm+att+assenze+gol_sub+autogol+att+(media<0.0f?-media:0.0f))*malus_mul*giorn_factor;
 
-    mValIniz14_15 = mValAcq13_14 + (bonus - malus);
-    if( mValIniz14_15 <=0.0f )
-        mValIniz14_15 = 1.0f;
+    mValAcquisto = mValAcq13_14 + (bonus - malus);
+    if( mValAcquisto <=0.0f )
+        mValAcquisto = 1.0f;
     // <<<<< applicare formula 2013/2014
 
-    mValore = mValIniz14_15;
+    mValore = mValAcquisto;
     //mValore = calcolaRivalutazione( 38 );
 
     return true;
@@ -488,7 +729,7 @@ bool QPlayer::calcolaValore1314()
 
 int QPlayer::calcolaRivalutazione( int giornata )
 {
-    int val_iniz = mValIniz14_15;
+    int val_iniz = mValAcquisto;
     // int val_iniz = mValAcq13_14; // Usato per debuggare la formula!!!
 
     float gol_factor=1.0f,ass_factor=1.0f;
@@ -555,6 +796,13 @@ int QPlayer::calcolaRivalutazione( int giornata )
     float malus = (assenze+autogol+rig_sbag+esp+amm+gol_sub+(media<0.0f?-media:0.0f))*malus_mul*giorn_factor;
 
     int nuovo_valore = val_iniz + (bonus - malus);
+
+
+    // >>>>> Calcolare valore per chi non ha presenza (1/38 in meno per ogni giornata di gioco)
+    if(mGiocate==0)
+        nuovo_valore = mValAcquisto - ((float)mValAcquisto/38.0f)*giornata;
+    // <<<<< Calcolare valore per chi non ha presenza (1/38 in meno per ogni giornata di gioco)
+
     if( nuovo_valore <=0.0f )
         nuovo_valore = 1.0f;
 
