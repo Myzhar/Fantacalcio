@@ -304,7 +304,11 @@ bool QPlayer::updateStats( int giornata )
         if( !ok )
             continue;
 
-        mGolFatti = strings[7].toInt( &ok );
+        mRigSegn = strings[14].toInt( &ok );
+        if( !ok )
+            continue;
+
+        mGolFatti = strings[7].toInt( &ok ) + mRigSegn;
         if( !ok )
             continue;
 
@@ -330,11 +334,7 @@ bool QPlayer::updateStats( int giornata )
 
         mRigSbag = strings[13].toInt( &ok );
         if( !ok )
-            continue;
-
-        mRigSegn = strings[14].toInt( &ok );
-        if( !ok )
-            continue;
+            continue;        
 
         mAutogol = strings[15].toInt( &ok );
         if( !ok )
