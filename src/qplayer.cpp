@@ -769,9 +769,9 @@ int QPlayer::calcolaRivalutazione( int giornata )
         malus_mul = 1.25f;
 
     float presenze = ((float)val_iniz * 0.015f) * (float)mGiocate;               // 15% ogni 10 giornate giocate - max 57%
-    float gol =      ((float)val_iniz * 0.025f) * (float)mGolFatti * gol_factor; // 2.5% ogni gol fatto - max 60%/75%
+    float gol =      ((float)val_iniz * 0.04f) * (float)mGolFatti * gol_factor; // 2.5% ogni gol fatto - max 60%/75%
     float rig_par =  ((float)val_iniz * 0.15f)  * (float)mRigPar;                // 15% ogni rigore parato - max 45%/75%
-    float assist =   ((float)val_iniz * 0.02f)  * (float)mAssTot * ass_factor;   // 2% ogni assist fatto - max 20%/30%
+    float assist =   ((float)val_iniz * 0.03f)  * (float)mAssTot * ass_factor;   // 2% ogni assist fatto - max 20%/30%
 
     float assenze =  ((float)val_iniz * 0.02f)  * (float)(giornata-mGiocate);    // 20% ogni 10 giornate non giocate - max 76%
     float autogol =  ((float)val_iniz * 0.075f) * (float)mAutogol;               // 7.5% ogni autogol - max 15%/22.5%
@@ -780,7 +780,7 @@ int QPlayer::calcolaRivalutazione( int giornata )
     float amm =      ((float)val_iniz * 0.02f)  * (float)mAmm;                   // 2% ogni ammonizione - max 20%/30%
     float gol_sub =  ((float)val_iniz * 0.015f) * (float)mGolSubiti;             // 1.5% ogni gol subito - max 40%/50%
 
-    float media =    ((float)val_iniz * 0.4f)   * (mMedia - 6.0f);               // 20% ogni 0.5 punti di media
+    float media =    ((float)val_iniz * 0.65f)   * (mMedia - 6.0f);               // 20% ogni 0.5 punti di media
 
     /*
     float port = 0.0f;
