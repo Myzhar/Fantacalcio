@@ -8,8 +8,8 @@
 #define STAT_NAP "statistiche_napoli.csv"
 #define STAT_ROM "statistiche_roma.csv"
 
-#define VOTI_PATH "/home/myzhar/devel/Fantacalcio-2014_2015/Fantacalcio/Fantacalcio_2014-2015/Voti"
-//#define VOTI_PATH "C:/Users/Walter/Documents/GitHub/Fantacalcio/Fantacalcio_2014-2015/Voti"
+#define VOTI_PATH "/home/myzhar/devel/Fantacalcio/Fantacalcio/Fantacalcio_2015-2016/Voti"
+//#define VOTI_PATH "C:/Users/Walter/Documents/GitHub/Fantacalcio/Fantacalcio_2015-2016/Voti"
 #define VOTI_MIL "Statistiche_Fantagazzetta_(MILANO)_alla_%1_Giornata.csv"
 #define VOTI_NAP "Statistiche_Fantagazzetta_(NAPOLI)_alla_%1_Giornata.csv"
 #define VOTI_ROM "Statistiche_Fantagazzetta_(ROMA)_alla_%1_Giornata.csv"
@@ -18,7 +18,7 @@
 #define QUOT_NAP "Quotazioni_Fantagazzetta_(NAPOLI)_alla_%1_Giornata.csv"
 #define QUOT_ROM "Quotazioni_Fantagazzetta_(ROMA)_alla_%1_Giornata.csv"
 
-#define SQ_PATH "/home/myzhar/devel/Fantacalcio-2014_2015/Fantacalcio/Fantacalcio_2014-2015/Squadre"
+#define SQ_PATH "/home/myzhar/devel/Fantacalcio/Fantacalcio/Fantacalcio_2015-2016/Squadre"
 //#define SQ_PATH "C:/Users/Walter/Documents/GitHub/Fantacalcio/Fantacalcio_2014-2015/Squadre"
 
 

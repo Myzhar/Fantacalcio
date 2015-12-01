@@ -773,7 +773,10 @@ int QPlayer::calcolaRivalutazione( int giornata )
     float rig_par =  ((float)val_iniz * 0.15f)  * (float)mRigPar;                // 15% ogni rigore parato - max 45%/75%
     float assist =   ((float)val_iniz * 0.03f)  * (float)mAssTot * ass_factor;   // 2% ogni assist fatto - max 20%/30%
 
-    float assenze =  ((float)val_iniz * 0.02f)  * (float)(giornata-mGiocate);    // 20% ogni 10 giornate non giocate - max 76%
+    //float assenzaRed = mCodice>860?0.5f:1.0f; // Riduzione del 50% per i giocatori arrivati a gennaio
+    int assenzaRed = mCodice>860?19:0; // I giocatori arrivati a gennaio si contano da metà campionato in poi
+
+    float assenze =  ((float)val_iniz * 0.02f)  * (float)((giornata-assenzaRed)-mGiocate) /** assenzaRed*/;    // 20% ogni 10 giornate non giocate - max 76%
     float autogol =  ((float)val_iniz * 0.075f) * (float)mAutogol;               // 7.5% ogni autogol - max 15%/22.5%
     float rig_sbag = ((float)val_iniz * 0.1f)   * (float)mRigSbag;               // 10% ogni rigore sbagliato - max 30%/50%
     float esp =      ((float)val_iniz * 0.04f)  * (float)mEsp;                   // 4% ogni espulsione - max 30%/50%

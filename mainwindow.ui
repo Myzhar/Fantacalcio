@@ -23,7 +23,7 @@
     <item row="0" column="1">
      <widget class="QTabWidget" name="tabWidget_teams">
       <property name="currentIndex">
-       <number>6</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab_1">
        <attribute name="title">
@@ -122,7 +122,7 @@
           <number>38</number>
          </property>
          <property name="value">
-          <number>38</number>
+          <number>14</number>
          </property>
         </widget>
        </item>

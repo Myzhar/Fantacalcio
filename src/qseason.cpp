@@ -18,14 +18,14 @@ bool QSeason::init2014_2015( int giornata )
     QTeam* team6 = new QTeam();
     QTeam* team7 = new QTeam();
 
-    team0->setParams( "Andrea", "Andrea", 250 );
-    team1->setParams( "Angelo", "Angelo", 250 );
-    team2->setParams( "Daniel", "Daniel", 250 );
-    team3->setParams( "Diego", "Diego", 250 );
-    team4->setParams( "Fabio", "Fabio", 250 );
-    team5->setParams( "Gabriele", "Gabriele", 250 );
-    team6->setParams( "Stefano", "Stefano", 250 );
-    team7->setParams( "F.C. Myzhar", "Walter", 250 );
+    team0->setParams( "Mainagioia", "Andrea", 250 );
+    team1->setParams( "isavidale", "Angelo", 250 );
+    team2->setParams( "FC DI BALLA", "Daniel", 250 );
+    team3->setParams( "Cavalieri del mare", "Diego", 250 );
+    team4->setParams( "Tristan FC", "Fabio", 250 );
+    team5->setParams( "Atletico Battilana", "Gabriele", 250 );
+    team6->setParams( "Turbo FC", "Stefano", 250 );
+    team7->setParams( "FC Myzhar", "Walter", 250 );
 
     if( !team0->caricaSquadra( mGiornata ) )
         return false;
